@@ -1,0 +1,17 @@
+services:
+  APP_TYPE-REPO_NAME:
+    networks:
+      - proxy
+    image: DOCKER_OWNER/DOCKER_IMAGE:latest
+    container_name: APP_TYPE-URL
+    hostname: URL
+    volumes:
+      - ./config:/config
+    environment:
+      - VIRTUAL_HOST=URL
+      - VIRTUAL_PORT=80
+
+networks:
+  proxy:
+    external: true
+    name: proxy

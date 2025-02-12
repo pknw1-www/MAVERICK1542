@@ -1,0 +1,75 @@
+name: 02 - Install
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_folder:
+        description: 'create install folder'
+        required: true
+        type: boolean
+        default: true
+      alt_gitfiles:
+        description: 'use alternative github folder'
+        required: true
+        type: boolean
+        default: true
+jobs:
+  install_product:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get repository name
+        id: repo-name
+        uses: MariachiBear/get-repo-name-action@v1.1.0
+        with:
+          with-owner: 'false'
+          string-case: 'lowercase'
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ovh
+      - name: executing remote ssh
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }} && mkdir -p ${{ vars.folder_name }} 
+      - name: copy file via ssh
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host:  ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username: ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }} 
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }} 
+          source: "deploy/docker-compose.yml"
+          target: ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }}
+      - name: executing remote move docker files
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }} && mv deploy/docker-compose.yml docker-compose.yml
+      - name: Creating GitHub Organization Repository
+        uses: howlowck/create-repo-action@v1.0
+        with:
+          zipPath: 'deploy/zipFile.zip'
+          repoOrg: 'pknw1-www'
+          repoName: '${{ vars.folder_name }}-config'
+          repoDescription: 'My Shiny New Repo'
+          repoVisibility: 'private'
+          securityToken: ${{ secrets.GH_ORG_TOKEN }}
+      - name: executing remote ssh
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }} && git --git-dir=/etc/pknw1/.gitfiles/${{ vars.folder_name }}-config.git clone git@github.com:pknw1-www/${{ vars.folder_name }}-config.git config
+

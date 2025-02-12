@@ -1,0 +1,50 @@
+name: 04 - Commit and Push Config
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'branch'
+        required: true
+        default: 'main'
+jobs:
+  backup_config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get repository name
+        id: repo-name
+        uses: MariachiBear/get-repo-name-action@v1.1.0
+        with:
+          with-owner: 'false'
+          string-case: 'lowercase'
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ovh
+      - name: executing remote docker compose down
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }} && docker compose down
+      - name: executing remote ssh
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }}/config && git add . && git commit -m $(date +%s) && git push
+      - name: executing remote docker compose down
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }} && docker compose up -d

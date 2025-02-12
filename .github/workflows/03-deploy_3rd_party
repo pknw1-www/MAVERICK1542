@@ -1,0 +1,31 @@
+name: 03 -  Deploy 3rd Party Image on Merge to Main
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'deploy after build'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  docker_deploy:
+    if: ${{ inputs.deploy == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ovh
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }} && docker compose down && docker compose pull && docker compose up -d

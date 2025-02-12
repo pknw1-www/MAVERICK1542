@@ -1,0 +1,83 @@
+name: 01 - Configure
+
+on:
+  workflow_dispatch:
+    inputs:
+      folder_name:
+        description: 'folder name'
+        default: 'test-www'
+      url:
+        description: 'URL'
+        default: '.pknw1.co.uk'
+      port:
+        description: 'Virtual Port'
+        default: '80'
+      app_type:
+        description: 'check app type'
+        type: choice
+        default: 'mobirise'
+        options:
+          - mobirise
+          - html
+          - flask
+          - 3rdParty
+      docker_image_owner:
+        description: 'docker image owner'
+        default: 'pknw1'
+      docker_image_name:
+        description: 'docker image name'
+        default: '.pknw1.co.uk'
+        
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_ORG_TOKEN }}
+      - name: Get repository name
+        id: repo-name
+        uses: MariachiBear/get-repo-name-action@v1.1.0
+        with:
+          with-owner: 'false'
+          string-case: 'lowercase'
+      - uses: action-pack/set-variable@v1
+        with:
+          name: 'url'
+          value: ${{ inputs.url }}
+          token: ${{ secrets.GH_ORG_TOKEN }}
+      - uses: action-pack/set-variable@v1
+        with:
+          name: 'app_type'
+          value: ${{ inputs.app_type }}
+          token: ${{ secrets.GH_ORG_TOKEN }}
+      - uses: action-pack/set-variable@v1
+        with:
+          name: 'folder_name'
+          value: ${{ inputs.folder_name }}
+          token: ${{ secrets.GH_ORG_TOKEN }}
+      - name: enable 3rd party deploy action
+        if: ${{ inputs.app_type == '3rdParty' }}
+        run: |
+          mv .github/workflows/03-build.yml .github/workflows/03-build
+          mv .github/workflows/03-deploy_3rd_party .github/workflows/03-deploy_3rd_party.yml
+      - name: create docker-compose
+        run: | 
+          cp deploy/docker-compose.yml deploy/docker-compose-dev.yml
+          sed -i 's/REPO_NAME/${{ steps.repo-name.outputs.repository-name }}/g' deploy/docker-compose.yml
+          sed -i 's/REPO_NAME/${{ steps.repo-name.outputs.repository-name }}-dev/g' deploy/docker-compose-dev.yml
+          sed -i 's/APP_TYPE/${{ inputs.app_type }}/g' deploy/docker-compose*
+          sed -i 's/DOCKER_OWNER/${{ inputs.docker_image_owner }}/g' deploy/docker-compose*
+          sed -i 's/DOCKER_IMAGE/${{ inputs.docker_image }}/g' deploy/docker-compose*
+          sed -i 's/80/${{ inputs.port }}/g' deploy/docker-compose*
+          sed -i 's/latest/dev/g' deploy/docker-compose-dev.yml
+          sed -i 's/URL/${{ inputs.url }}/g' deploy/docker-compose.yml
+          sed -i 's/URL/dev-${{ inputs.url }}/g' deploy/docker-compose-dev.yml
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Updated compose files
+          push_options: '--force'
+          branch: main

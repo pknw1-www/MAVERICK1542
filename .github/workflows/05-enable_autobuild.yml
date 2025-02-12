@@ -1,0 +1,30 @@
+name: 05 - Enable AutoBuild
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_autobuild:
+        description: 'Enable AutoBuild'
+        default: false
+        type: boolean
+
+jobs:
+  enable_autobuild:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable_autobuild == true }}
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_ORG_TOKEN }}
+      - name: renaming file
+        run: | 
+          mv .github/workflows/03-build_on_merge .github/workflows/03-build_on_merge.yml
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Updated compose files
+          push_options: '--force'
+          branch: main
+

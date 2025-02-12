@@ -1,0 +1,61 @@
+name: 03 - Build & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'deploy after build'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get repository name
+        id: repo-name
+        uses: MariachiBear/get-repo-name-action@v1.1.0
+        with:
+          with-owner: 'false'
+          string-case: 'lowercase'
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: fix banner
+        if: ${{ vars.app_type == 'mobirise' }}
+        run: |
+          sed -i 's/display: flex/display: none/g' build/publish/*html
+      - name: Build and push Docker images
+        run: |
+          TIMESTAMP=$(date +%s)
+          echo ${TIMESTAMP} > build/publish/version.html
+          cd build
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.URL }}:${TIMESTAMP} .
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.URL }}:${TIMESTAMP}
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.URL }}:latest .
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.URL }}:latest
+
+  docker_deploy:
+    if: ${{ inputs.deploy == true }}
+    needs: docker_build 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ovh
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.TAILSCALE_SSH_SERVER }}
+          username:  ${{ secrets.TAILSCALE_SSH_USER }}
+          key: ${{ secrets.TAILSCALE_SSH_KEY }}
+          port: ${{ secrets.TAILSCALE_SSH_SERVER_PORT }}
+          script: cd ${{ vars.DOCKER_ROOT }}/${{ vars.folder_name }} && docker compose down && docker compose pull && docker compose up -d
