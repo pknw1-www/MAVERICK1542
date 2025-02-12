@@ -34,7 +34,7 @@ jobs:
           docker build -t ${{ inputs.docker_image }} .
       - name: export image
         run: |
-          docker save -o ${{ steps.repo-name.outputs.repo-name }}.tar ${{ inputs.docker_image }}
+          docker save -o image.tar ${{ inputs.docker_image }}
           find . -type f -iname '*tar'
           
       - uses: actions/upload-artifact@v4
@@ -44,4 +44,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: docker-image
-          path: '${{ steps.repo-name.outputs.repo-name }}.tar'
+          path: 'image.tar'
