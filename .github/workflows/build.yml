@@ -22,6 +22,7 @@ jobs:
           string-case: 'lowercase'
       - name: create docker-compose
         run: | 
+          cp deploy/docker-compose-orig.yml deplloy/docker-compose.yml
           sed -i 's/REPO_NAME/${{ steps.repo-name.outputs.repo-name }}/g' deploy/docker-compose.yml
           sed -i 's/DOCKER_IMAGE/${{ inputs.docker_image }}/g' deploy/docker-compose.yml
           sed -i 's/HOSTNAME/${{ inputs.hostname }}/g' deploy/docker-compose.yml
