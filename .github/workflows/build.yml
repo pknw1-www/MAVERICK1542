@@ -32,9 +32,11 @@ jobs:
           echo ${TIMESTAMP} > build/publish/version.html
           cd build
           docker build -t ${{ inputs.docker_image }} .
-          cd ..
+      - name: export image
+        run: |
           docker save -o ${{ steps.repo-name.outputs.repo-name }}.tar ${{ inputs.docker_image }}
-
+          find . -type f -iname '*tar'
+          
       - uses: actions/upload-artifact@v4
         with:
           name: docker-compose
