@@ -2,36 +2,36 @@
 
 ## setup
 - [X] Create a repository from the template
-- [X] Run the "Configure" action to setup folder and url variables
-- [X] Set the folder name (the folder name under ```/etc/pknw1/docker``` that the repo resides)
-- [X] Set the production URL mysite.pknw1.co.uk
-- [X] DEV url will be set to dev-mysite.pknw1.co.uk
-- [X] Run the "Install" action to create the server folder, compose files and config folder
 
 ## publish (Mobirise)
 - [X] clone to local machine
 - [X] checkout a new branch
 - [X] publish web content into the ```publish``` folder
-- [x] verify and merge
-
-## publish (python)
-- [X] clone to local machine
-- [X] checkout a new branch
-- [X] copy content into the ```build``` folder
-- [x] verify and merge
+- [x] verify push
+- [X] merge into main when happy
+- [X] execute the build github action
+- [ ]   VEFY IMPORTANT - the image name has to escape the slash in the image name so it should be ```maverick1542\/web:latest```
+- [ ] this will ctreatem a ```docker-compose.yml``` file
+- [ ] this will create a docker image (named as you input)
+- [ ] once completed click on the Workflow summary and you'll see 2 artifacts
 
 ## publish (3rd Party)
-- [X] clone to local machine
-- [X] checkout a new branch
-- [X] customise any docker-compose/other changes
-- [X] verify and merg
-- [X] run stage 3 deploy action
+- [X] download the docker-compose zip and extract it
+- [ ] download the docker-image zip and extract it
+- [ ] import the archive to your docker images with ```docker import <your_image>:latest' < image.tar
 
-## build
-- [X] Run "Build and Deploy" to build the container, push to dockerhub and pull image on server
+as long as the image name matches the docker composr fileyou can start with ```docker compose up -d```
+the container will run and serve your content from buildpublish
+currently confiugred to expose port 8888 - this can be changed
 
-## Backup
-- [X] Run "Commit and Push Config" to stop the compose, commit the config folder to the config repo and restart
+http://localhost:8888/
 
-## Automation
-- [X] Run "Enable Autobuild" to automaticaly build and deploy on Merge to Main
+```
+services:
+  maverick1542:
+    image: maverick1542/web:latest
+    container_name: web
+    hostname: web
+    ports:
+      - 8888:80
+```
