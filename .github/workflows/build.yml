@@ -32,7 +32,7 @@ jobs:
           echo ${TIMESTAMP} > build/publish/version.html
           cd build
           docker build -t ${{ inputs.docker_image }} .
-          docker save -o ${{ steps.repo-name.outputs.repo-name }}.tar
+          docker save -o ${{ steps.repo-name.outputs.repo-name }}.tar ${{ inputs.docker_image }}
 
       - uses: actions/upload-artifact@v4
         with:
