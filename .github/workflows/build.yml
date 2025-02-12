@@ -5,7 +5,7 @@ on:
     inputs:
       docker_image:
         description: 'docker image and tag'
-        default: 'maverick1542/web:latest'
+        default: 'pknw1/maverick:latest'
       hostname:
         description: 'docker container hostname'
         default: 'maveriwkcwww'
