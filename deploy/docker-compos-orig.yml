@@ -1,0 +1,8 @@
+services:
+  REPO_NAME:
+    image: DOCKER_IMAGE
+    container_name: APP_TYPE-URL
+    hostname: URL
+    ports:
+      - 8888:80
+
