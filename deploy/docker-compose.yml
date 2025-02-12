@@ -1,6 +1,6 @@
 services:
-  REPO_NAME:
-    image: DOCKER_IMAGE
+  maverick1542:
+    image: 
     container_name: APP_TYPE-URL
     hostname: URL
     ports:
