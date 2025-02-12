@@ -31,7 +31,8 @@ jobs:
           TIMESTAMP=$(date +%s)
           echo ${TIMESTAMP} > build/publish/version.html
           cd build
-          docker build --output type=tar --dest ${{ steps.repo-name.outputs.repo-name }}.tar -t ${{ inputs.docker_image }} .
+          docker build -t ${{ inputs.docker_image }} .
+          docker save -o ${{ steps.repo-name.outputs.repo-name }}.tar
 
       - uses: actions/upload-artifact@v4
         with:
