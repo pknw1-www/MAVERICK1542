@@ -1,0 +1,8 @@
+services:
+  www-container:
+    image: DOCKER_USER/DOCKER_IMAGE:DOCKER_TAG
+    container_name: HOSTNAME
+    hostname: HOSTNAME
+    ports:
+      - 80:80
+

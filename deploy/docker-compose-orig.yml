@@ -1,8 +1,35 @@
 services:
-  REPO_NAME:
-    image: DOCKER_IMAGE
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/docker/configs/letsencrypt-proxy/letsencrypt-certs:/etc/nginx/certs
+      - /etc/docker/configs/letsencrypt-proxy/letsencrypt-vhost-d:/etc/nginx/vhost.d
+      - /etc/docker/configs/letsencrypt-proxy/letsencrypt-html:/usr/share/nginx/html
+  letsencrypt-proxy:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/docker/configs/letsencrypt-proxy/letsencrypt-certs:/etc/nginx/certs
+      - /etc/docker/configs/letsencrypt-proxy/letsencrypt-vhost-d:/etc/nginx/vhost.d
+      - /etc/docker/configs/letsencrypt-proxy/letsencrypt-html:/usr/share/nginx/html
+    environment:
+      - DEFAULT_EMAIL=letsencrypt@pknw1.co.uk
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+  www-container:
+    image: DOCKER_USER/DOCKER_IMAGE:DOCKER_TAG
     container_name: HOSTNAME
     hostname: HOSTNAME
-    ports:
-      - 8888:80
+    environment:
+      - VIRTUAL_HOST=HOSTNAME
+      - VIRTUAL_PORT=VIRTUAL_PORT_SED
+      - LETSENCRYPT_HOST=HOSTNAME
 
+
+networks:
+  www-network:

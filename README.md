@@ -1,4 +1,25 @@
 # template-docker-www
+![pknw1](https://i.imgur.com/QLE73JX.png)![nginx](https://i.imgur.com/gmRovtW.png)![ssl](https://i.imgur.com/5qo1GoK.png)![caddy](https://i.imgur.com/KJwjKa8.png)![ntfy](https://i.imgur.com/ZvgI8QM.png)
+
+Configurable template repository to deliver static content using Caddy HTTP server in Docker
+
+1. Commit and merge into Main branch
+2. Select the "Build" manual action 
+3. Set configuration values
+
+  ```
+  [docker_user]/[docker_image]:[docker_tag]          The output docker image details
+  [hostname]                                         The Hostname and Proxy Virtual Host Name
+  [hostport]                                         The Port to send proxied traffic 
+  [deploy_stack]                                     Simple HTTP container or Proxied for SSL Termination
+  ```
+<details>
+  <summary></summary>
+   info
+</details>
+
+4. Click Run Workflow 
+
 
 ## setup
 - [X] Create a repository from the template
