@@ -15,7 +15,11 @@ Configurable template repository to deliver static content using Caddy HTTP serv
   ```
 <details>
   <summary></summary>
-   info
+   This second version includes the simple build to image and export as tar feature however by running Buiild & Deploy and selecting 
+   "proxied version" it will deploy nginx frontend and setup for automatic SSL certs 
+
+  If the machine running the container is behind a firewall and not reachable via http 80 for LetsEncrypt to perform verification for SSL issue, 
+   you can either open port forwarding from your public IP through the router to host machine - but then close it aftertwrds
 </details>
 
 4. Click Run Workflow 
